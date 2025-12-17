@@ -14,27 +14,31 @@ async function loadPostdocs() {
 
 /* ---------- RENDER TABLE ---------- */
 function renderTable(data) {
-  tbody.innerHTML = "";
-
-  data.forEach(p => {
-    const row = document.createElement("tr");
-
-    const deadlineClass = getDeadlineClass(p.dl);
-
-    row.innerHTML = `
-      <td>${p.uni}</td>
-      <td>${p.rg}</td>
-      <td class="${deadlineClass}">${p.dl}</td>
-      <td>
-        ${p.link 
-          ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
-          : "—"}
-      </td>
-    `;
-
-    tbody.appendChild(row);
-  });
-}
+    tbody.innerHTML = "";
+  
+    data.forEach(p => {
+      const row = document.createElement("tr");
+  
+      const countdown = getCountdown(p.dl);
+  
+      row.innerHTML = `
+        <td>${p.uni}</td>
+        <td>${p.rg}</td>
+        <td class="${countdown.class}">
+          ${p.dl}
+          ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+        </td>
+        <td>
+          ${p.link
+            ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
+            : "—"}
+        </td>
+      `;
+  
+      tbody.appendChild(row);
+    });
+  }
+  
 
 /* ---------- SEARCH ---------- */
 searchInput.addEventListener("input", () => {
@@ -66,6 +70,31 @@ function sortTable(colIndex) {
   renderTable(postdocs);
 }
 
+function getCountdown(dl) {
+    if (!dl || dl.toLowerCase() === "open") {
+      return { text: "", class: "" };
+    }
+  
+    const today = new Date();
+    const deadline = new Date(dl);
+    const diffMs = deadline - today;
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  
+    if (diffDays < 0) {
+      return { text: "Expired", class: "deadline-soon" };
+    }
+  
+    if (diffDays <= 7) {
+      return { text: `${diffDays} days left`, class: "deadline-soon" };
+    }
+  
+    if (diffDays <= 14) {
+      return { text: `${diffDays} days left`, class: "deadline-mid" };
+    }
+  
+    return { text: `${diffDays} days left`, class: "deadline-ok" };
+  }
+  
 /* ---------- DEADLINE COLOR LOGIC ---------- */
 function getDeadlineClass(dl) {
   if (!dl || dl.toLowerCase() === "open") return "";
