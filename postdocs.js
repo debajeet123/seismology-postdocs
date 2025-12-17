@@ -7,10 +7,12 @@ const searchInput = document.getElementById("searchInput");
 
 /* ---------- LOAD DATA ---------- */
 async function loadPostdocs() {
-  const res = await fetch("postdocs.json");
-  postdocs = await res.json();
-  renderTable(postdocs);
-}
+    const res = await fetch("postdocs.json");
+    postdocs = await res.json();
+    postdocs.sort((a, b) => new Date(a.dl) - new Date(b.dl));
+    renderTable(postdocs);
+  }
+  
 
 /* ---------- RENDER TABLE ---------- */
 function renderTable(data) {
@@ -62,6 +64,13 @@ function sortTable(colIndex) {
   }
 
   postdocs.sort((a, b) => {
+    if (colIndex === 2) {
+      // Deadline column → date-aware sort
+      const da = a.dl.toLowerCase() === "open" ? Infinity : new Date(a.dl);
+      const db = b.dl.toLowerCase() === "open" ? Infinity : new Date(b.dl);
+      return sortAsc ? da - db : db - da;
+    }
+
     const A = a[keys[colIndex]].toLowerCase();
     const B = b[keys[colIndex]].toLowerCase();
     return sortAsc ? A.localeCompare(B) : B.localeCompare(A);
@@ -69,6 +78,108 @@ function sortTable(colIndex) {
 
   renderTable(postdocs);
 }
+function sortTable(colIndex) {
+  const keys = ["uni", "rg", "dl"];
+
+  if (currentSortCol === colIndex) {
+    sortAsc = !sortAsc;
+  } else {
+    currentSortCol = colIndex;
+    sortAsc = true;
+  }
+
+  postdocs.sort((a, b) => {
+    if (colIndex === 2) {
+      // Deadline column → date-aware sort
+      const da = a.dl.toLowerCase() === "open" ? Infinity : new Date(a.dl);
+      const db = b.dl.toLowerCase() === "open" ? Infinity : new Date(b.dl);
+      return sortAsc ? da - db : db - da;
+    }
+
+    const A = a[keys[colIndex]].toLowerCase();
+    const B = b[keys[colIndex]].toLowerCase();
+    return sortAsc ? A.localeCompare(B) : B.localeCompare(A);
+  });
+
+  renderTable(postdocs);
+}
+function sortTable(colIndex) {
+  const keys = ["uni", "rg", "dl"];
+
+  if (currentSortCol === colIndex) {
+    sortAsc = !sortAsc;
+  } else {
+    currentSortCol = colIndex;
+    sortAsc = true;
+  }
+
+  postdocs.sort((a, b) => {
+    if (colIndex === 2) {
+      // Deadline column → date-aware sort
+      const da = a.dl.toLowerCase() === "open" ? Infinity : new Date(a.dl);
+      const db = b.dl.toLowerCase() === "open" ? Infinity : new Date(b.dl);
+      return sortAsc ? da - db : db - da;
+    }
+
+    const A = a[keys[colIndex]].toLowerCase();
+    const B = b[keys[colIndex]].toLowerCase();
+    return sortAsc ? A.localeCompare(B) : B.localeCompare(A);
+  });
+
+  renderTable(postdocs);
+}
+function sortTable(colIndex) {
+  const keys = ["uni", "rg", "dl"];
+
+  if (currentSortCol === colIndex) {
+    sortAsc = !sortAsc;
+  } else {
+    currentSortCol = colIndex;
+    sortAsc = true;
+  }
+
+  postdocs.sort((a, b) => {
+    if (colIndex === 2) {
+      // Deadline column → date-aware sort
+      const da = a.dl.toLowerCase() === "open" ? Infinity : new Date(a.dl);
+      const db = b.dl.toLowerCase() === "open" ? Infinity : new Date(b.dl);
+      return sortAsc ? da - db : db - da;
+    }
+
+    const A = a[keys[colIndex]].toLowerCase();
+    const B = b[keys[colIndex]].toLowerCase();
+    return sortAsc ? A.localeCompare(B) : B.localeCompare(A);
+  });
+
+  renderTable(postdocs);
+}
+function sortTable(colIndex) {
+    const keys = ["uni", "rg", "dl"];
+  
+    if (currentSortCol === colIndex) {
+      sortAsc = !sortAsc;
+    } else {
+      currentSortCol = colIndex;
+      sortAsc = true;
+    }
+  
+    postdocs.sort((a, b) => {
+      if (colIndex === 2) {
+        // Deadline column → date-aware sort
+        const da = a.dl.toLowerCase() === "open" ? Infinity : new Date(a.dl);
+        const db = b.dl.toLowerCase() === "open" ? Infinity : new Date(b.dl);
+        return sortAsc ? da - db : db - da;
+      }
+  
+      const A = a[keys[colIndex]].toLowerCase();
+      const B = b[keys[colIndex]].toLowerCase();
+      return sortAsc ? A.localeCompare(B) : B.localeCompare(A);
+    });
+  
+    renderTable(postdocs);
+  }
+  
+  
 
 function getCountdown(dl) {
     if (!dl || dl.toLowerCase() === "open") {
@@ -96,17 +207,7 @@ function getCountdown(dl) {
   }
   
 /* ---------- DEADLINE COLOR LOGIC ---------- */
-function getDeadlineClass(dl) {
-  if (!dl || dl.toLowerCase() === "open") return "";
 
-  const today = new Date();
-  const deadline = new Date(dl);
-  const diffDays = (deadline - today) / (1000 * 60 * 60 * 24);
-
-  if (diffDays <= 7) return "deadline-soon";
-  if (diffDays <= 14) return "deadline-mid";
-  return "deadline-ok";
-}
 
 /* ---------- INIT ---------- */
 loadPostdocs();
