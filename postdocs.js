@@ -1,26 +1,83 @@
+let postdocs = [];
+let currentSortCol = null;
+let sortAsc = true;
+
+const tbody = document.querySelector("#postdocTable tbody");
+const searchInput = document.getElementById("searchInput");
+
+/* ---------- LOAD DATA ---------- */
 async function loadPostdocs() {
-    const res = await fetch("postdocs.json");
-    const postdocs = await res.json();
-  
-    const tbody = document.querySelector("#postdocTable tbody");
-    tbody.innerHTML = "";
-  
-    postdocs.forEach(p => {
-      const row = document.createElement("tr");
-  
-      const linkCell = p.link
-        ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
-        : "—";
-  
-      row.innerHTML = `
-        <td>${p.uni}</td>
-        <td>${p.rg}</td>
-        <td>${p.dl}</td>
-        <td>${linkCell}</td>
-      `;
-      tbody.appendChild(row);
-    });
+  const res = await fetch("postdocs.json");
+  postdocs = await res.json();
+  renderTable(postdocs);
+}
+
+/* ---------- RENDER TABLE ---------- */
+function renderTable(data) {
+  tbody.innerHTML = "";
+
+  data.forEach(p => {
+    const row = document.createElement("tr");
+
+    const deadlineClass = getDeadlineClass(p.dl);
+
+    row.innerHTML = `
+      <td>${p.uni}</td>
+      <td>${p.rg}</td>
+      <td class="${deadlineClass}">${p.dl}</td>
+      <td>
+        ${p.link 
+          ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
+          : "—"}
+      </td>
+    `;
+
+    tbody.appendChild(row);
+  });
+}
+
+/* ---------- SEARCH ---------- */
+searchInput.addEventListener("input", () => {
+  const q = searchInput.value.toLowerCase();
+  const filtered = postdocs.filter(p =>
+    p.uni.toLowerCase().includes(q) ||
+    p.rg.toLowerCase().includes(q)
+  );
+  renderTable(filtered);
+});
+
+/* ---------- SORT ---------- */
+function sortTable(colIndex) {
+  const keys = ["uni", "rg", "dl"];
+
+  if (currentSortCol === colIndex) {
+    sortAsc = !sortAsc;
+  } else {
+    currentSortCol = colIndex;
+    sortAsc = true;
   }
-  
-  loadPostdocs();
-  
+
+  postdocs.sort((a, b) => {
+    const A = a[keys[colIndex]].toLowerCase();
+    const B = b[keys[colIndex]].toLowerCase();
+    return sortAsc ? A.localeCompare(B) : B.localeCompare(A);
+  });
+
+  renderTable(postdocs);
+}
+
+/* ---------- DEADLINE COLOR LOGIC ---------- */
+function getDeadlineClass(dl) {
+  if (!dl || dl.toLowerCase() === "open") return "";
+
+  const today = new Date();
+  const deadline = new Date(dl);
+  const diffDays = (deadline - today) / (1000 * 60 * 60 * 24);
+
+  if (diffDays <= 7) return "deadline-soon";
+  if (diffDays <= 14) return "deadline-mid";
+  return "deadline-ok";
+}
+
+/* ---------- INIT ---------- */
+loadPostdocs();
