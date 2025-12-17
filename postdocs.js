@@ -13,7 +13,6 @@ async function loadPostdocs() {
     renderTable(postdocs);
   }
   
-
 /* ---------- RENDER TABLE ---------- */
 function renderTable(data) {
     tbody.innerHTML = "";
