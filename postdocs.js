@@ -50,40 +50,33 @@ async function loadPostdocs() {
 }
 
 /* ---------- RENDER TABLE ---------- */
-function renderTable(data) {
-  tbody.innerHTML = "";
+row.innerHTML = `
+  <td>${esc(p.uni)}</td>
+  <td>${esc(p.rg)}</td>
+  <td class="${countdown.class}">
+    ${esc(p.dl)}
+    ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+  </td>
+  <td>
+    ${p.link
+      ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
+      : "—"}
+  </td>
+`;
 
-  data.forEach(p => {
-    const row = document.createElement("tr");
-    const countdown = getCountdown(p.dl);
-
-    row.innerHTML = `
-      <td>${p.uni}</td>
-      <td>${p.rg}</td>
-      <td class="${countdown.class}">
-        ${p.dl}
-        ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
-      </td>
-      <td>
-        ${p.link
-          ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
-          : "—"}
-      </td>
-    `;
-
-    tbody.appendChild(row);
-  });
-}
 
 /* ---------- SEARCH ---------- */
-searchInput.addEventListener("input", () => {
-  const q = searchInput.value.toLowerCase();
-  const filtered = postdocs.filter(p =>
-    p.uni.toLowerCase().includes(q) ||
-    p.rg.toLowerCase().includes(q)
-  );
-  renderTable(filtered);
-});
+if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase();
+      const filtered = postdocs.filter(p =>
+        p.uni.toLowerCase().includes(q) ||
+        p.rg.toLowerCase().includes(q)
+      );
+      renderTable(filtered);
+    });
+  }
+  
 
 /* ---------- SORT ---------- */
 function sortTable(colIndex) {
@@ -117,7 +110,8 @@ function getCountdown(dl) {
     return { text: "", class: "" };
   }
 
-  const deadline = new Date(dl);
+  const deadline = new Date(dl + "T00:00:00");
+
   if (Number.isNaN(deadline.getTime())) {
     return { text: "", class: "" };
   }
@@ -143,3 +137,12 @@ function getCountdown(dl) {
 
 /* ---------- INIT ---------- */
 loadPostdocs();
+
+
+function esc(str = "") {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+  
