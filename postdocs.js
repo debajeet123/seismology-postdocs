@@ -1,23 +1,6 @@
-const FALLBACK_POSTDOCS = [
-  {
-    uni: "Stanford University",
-    rg: "Computational Seismology / Earthquake Physics",
-    dl: "2025-01-15",
-    link: "https://example.com/stanford-postdoc",
-  },
-  {
-    uni: "Caltech",
-    rg: "Seismic Imaging & Inversion",
-    dl: "2025-02-01",
-    link: "https://example.com/caltech-postdoc",
-  },
-  {
-    uni: "UC Berkeley",
-    rg: "Distributed Acoustic Sensing (DAS)",
-    dl: "open",
-    link: "https://example.com/berkeley-postdoc",
-  },
-];
+const FALLBACK_POSTDOCS = typeof window !== "undefined" && Array.isArray(window.FALLBACK_POSTDOCS)
+  ? window.FALLBACK_POSTDOCS
+  : [];
 
 let postdocs = [];
 let currentSortCol = null;
