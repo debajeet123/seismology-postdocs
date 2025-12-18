@@ -150,3 +150,9 @@ function sortTable(colIndex) {
 
 /* ---------- INIT ---------- */
 loadPostdocs();
+
+function daysAgo(isoDate) {
+  const then = new Date(isoDate + "T00:00:00");
+  const now = new Date();
+  return Math.floor((now - then) / (1000 * 60 * 60 * 24));
+}
