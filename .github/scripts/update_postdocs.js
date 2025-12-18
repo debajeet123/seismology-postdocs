@@ -27,7 +27,12 @@ const updated = data.map(p => {
 });
 
 if (changed) {
-  fs.writeFileSync(FILE, JSON.stringify(updated, null, 2));
+  const output = {
+  updated: todayISO(),
+  entries: updated
+};
+
+fs.writeFileSync(FILE, JSON.stringify(output, null, 2));
   console.log("postdocs.json updated");
 } else {
   console.log("No open deadlines found");
