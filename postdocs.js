@@ -34,9 +34,69 @@ async function loadPostdocs() {
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error("Empty dataset");
     }
-
+    function renderTable(data) {
+        tbody.innerHTML = "";
+      
+        data.forEach((p, idx) => {
+          const countdown = getCountdown(p.dl);
+          const detailsId = `details-${idx}`;
+      
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${p.uni}</td>
+            <td>${p.rg}</td>
+            <td class="${countdown.class}">
+              ${p.dl}
+              ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+            </td>
+            <td>
+              ${p.details ? `<button class="details-btn" data-target="${detailsId}">Details</button>` : "—"}
+            </td>
+          `;
+      
+          tbody.appendChild(row);
+      
+          if (p.details) {
+            const detailsRow = document.createElement("tr");
+            detailsRow.id = detailsId;
+            detailsRow.className = "details-row";
+            detailsRow.style.display = "none";
+      
+            detailsRow.innerHTML = `
+              <td colspan="4">
+                <div class="details-box">
+                  ${p.details.summary ? `<p><strong>Summary:</strong> ${p.details.summary}</p>` : ""}
+                  ${p.details.pi ? `<p><strong>PI:</strong> ${p.details.pi}</p>` : ""}
+                  ${Array.isArray(p.details.keywords)
+                    ? `<p><strong>Keywords:</strong> ${p.details.keywords.join(", ")}</p>`
+                    : ""}
+                  ${p.details.notes ? `<p><strong>Notes:</strong> ${p.details.notes}</p>` : ""}
+                </div>
+              </td>
+            `;
+      
+            tbody.appendChild(detailsRow);
+          }
+        });
+      
+        attachDetailHandlers();
+      }
+      
     postdocs = data;
-  } catch (err) {
+
+  } 
+  function attachDetailHandlers() {
+    document.querySelectorAll(".details-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = document.getElementById(btn.dataset.target);
+        const isOpen = target.style.display === "table-row";
+  
+        target.style.display = isOpen ? "none" : "table-row";
+        btn.textContent = isOpen ? "Details" : "Hide";
+      });
+    });
+  }
+  catch (err) {
     console.warn("Using built-in dataset because postdocs.json could not be loaded.", err);
     postdocs = [...FALLBACK_POSTDOCS];
     if (postdocs.length === 0) {

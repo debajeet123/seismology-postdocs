@@ -137,3 +137,27 @@
     text-align: center;
     color: var(--text-dim);
   }
+
+
+  .details-btn {
+    background: none;
+    border: 1px solid #334155;
+    color: #93c5fd;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  
+  .details-btn:hover {
+    background: rgba(148, 163, 184, 0.15);
+  }
+  
+  .details-box {
+    padding: 0.8rem 1rem;
+    background: #020617;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  
