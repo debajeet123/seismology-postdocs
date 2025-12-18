@@ -1,8 +1,3 @@
-const FALLBACK_POSTDOCS =
-  typeof window !== "undefined" && Array.isArray(window.FALLBACK_POSTDOCS)
-    ? window.FALLBACK_POSTDOCS
-    : [];
-
 let postdocs = [];
 let currentSortCol = null;
 let sortAsc = true;
@@ -10,7 +5,6 @@ let sortAsc = true;
 const tbody = document.querySelector("#postdocTable tbody");
 const searchInput = document.getElementById("searchInput");
 
-/* ---------- HELPERS ---------- */
 function esc(str = "") {
   return String(str)
     .replaceAll("&", "&amp;")
@@ -28,8 +22,6 @@ function getCountdown(dl) {
   if (!dl || dl.toLowerCase() === "open") return { text: "", class: "" };
 
   const deadline = new Date(dl + "T00:00:00");
-  if (Number.isNaN(deadline.getTime())) return { text: "", class: "" };
-
   const diffDays = Math.ceil(
     (deadline - new Date()) / (1000 * 60 * 60 * 24)
   );
@@ -40,79 +32,81 @@ function getCountdown(dl) {
   return { text: `${diffDays} days left`, class: "deadline-ok" };
 }
 
-/* ---------- DETAILS TOGGLE ---------- */
-function attachDetailHandlers() {
-  document.querySelectorAll(".details-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const target = document.getElementById(btn.dataset.target);
-      const open = target.style.display === "table-row";
-      target.style.display = open ? "none" : "table-row";
-      btn.textContent = open ? "Details" : "Hide";
-    });
-  });
+function setLastUpdated(isoDate) {
+  const el = document.getElementById("lastUpdated");
+  if (!el || !isoDate) return;
+
+  const then = new Date(isoDate + "T00:00:00");
+  const days = Math.floor((new Date() - then) / (1000 * 60 * 60 * 24));
+
+  el.textContent =
+    days === 0
+      ? "Last updated: today"
+      : `Last updated: ${days} day${days !== 1 ? "s" : ""} ago`;
 }
 
-/* ---------- RENDER TABLE ---------- */
 function renderTable(data) {
   tbody.innerHTML = "";
 
   data.forEach((p, idx) => {
-    const countdown = getCountdown(p.dl);
+    const c = getCountdown(p.dl);
     const detailsId = `details-${idx}`;
 
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${esc(p.uni)}</td>
       <td>${esc(p.rg)}</td>
-      <td class="${countdown.class}">
+      <td class="${c.class}">
         ${esc(p.dl)}
-        ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+        ${c.text ? `<span class="countdown">${c.text}</span>` : ""}
       </td>
       <td>
-        ${p.details ? `<button class="details-btn" data-target="${detailsId}">Details</button>` : "—"}
+        ${p.details ? `<button class="details-btn" data-id="${detailsId}">Details</button>` : "—"}
       </td>
     `;
     tbody.appendChild(row);
 
     if (p.details) {
-      const detailsRow = document.createElement("tr");
-      detailsRow.id = detailsId;
-      detailsRow.style.display = "none";
-      detailsRow.innerHTML = `
+      const drow = document.createElement("tr");
+      drow.id = detailsId;
+      drow.style.display = "none";
+      drow.innerHTML = `
         <td colspan="4">
           <div class="details-box">
-            ${p.details.summary ? `<p><strong>Summary:</strong> ${esc(p.details.summary)}</p>` : ""}
-            ${p.details.pi ? `<p><strong>PI:</strong> ${esc(p.details.pi)}</p>` : ""}
+            ${p.details.summary ? `<p><b>Summary:</b> ${esc(p.details.summary)}</p>` : ""}
+            ${p.details.pi ? `<p><b>PI:</b> ${esc(p.details.pi)}</p>` : ""}
             ${Array.isArray(p.details.keywords)
-              ? `<p><strong>Keywords:</strong> ${p.details.keywords.map(esc).join(", ")}</p>`
+              ? `<p><b>Keywords:</b> ${p.details.keywords.map(esc).join(", ")}</p>`
               : ""}
-            ${p.details.notes ? `<p><strong>Notes:</strong> ${esc(p.details.notes)}</p>` : ""}
+            ${p.details.notes ? `<p><b>Notes:</b> ${esc(p.details.notes)}</p>` : ""}
           </div>
         </td>
       `;
-      tbody.appendChild(detailsRow);
+      tbody.appendChild(drow);
     }
   });
 
-  attachDetailHandlers();
+  document.querySelectorAll(".details-btn").forEach(btn => {
+    btn.onclick = () => {
+      const row = document.getElementById(btn.dataset.id);
+      const open = row.style.display === "table-row";
+      row.style.display = open ? "none" : "table-row";
+      btn.textContent = open ? "Details" : "Hide";
+    };
+  });
 }
 
-/* ---------- LOAD DATA ---------- */
 async function loadPostdocs() {
-  try {
-    const res = await fetch("postdocs.json", { cache: "no-cache" });
-    if (!res.ok) throw new Error();
-    postdocs = await res.json();
-    if (!Array.isArray(postdocs)) throw new Error();
-  } catch {
-    postdocs = [...FALLBACK_POSTDOCS];
-  }
+  const res = await fetch("postdocs.json", { cache: "no-cache" });
+  const json = await res.json();
+
+  postdocs = json.entries || [];
+  setLastUpdated(json.last_updated);
 
   postdocs.sort((a, b) => deadlineValue(a.dl) - deadlineValue(b.dl));
   renderTable(postdocs);
 }
 
-/* ---------- SEARCH ---------- */
 if (searchInput) {
   searchInput.addEventListener("input", () => {
     const q = searchInput.value.toLowerCase();
@@ -125,15 +119,10 @@ if (searchInput) {
   });
 }
 
-/* ---------- SORT ---------- */
 function sortTable(colIndex) {
   const keys = ["uni", "rg", "dl"];
-
-  if (currentSortCol === colIndex) sortAsc = !sortAsc;
-  else {
-    currentSortCol = colIndex;
-    sortAsc = true;
-  }
+  sortAsc = currentSortCol === colIndex ? !sortAsc : true;
+  currentSortCol = colIndex;
 
   postdocs.sort((a, b) =>
     colIndex === 2
@@ -148,11 +137,4 @@ function sortTable(colIndex) {
   renderTable(postdocs);
 }
 
-/* ---------- INIT ---------- */
 loadPostdocs();
-
-function daysAgo(isoDate) {
-  const then = new Date(isoDate + "T00:00:00");
-  const now = new Date();
-  return Math.floor((now - then) / (1000 * 60 * 60 * 24));
-}

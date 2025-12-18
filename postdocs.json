@@ -1,20 +1,16 @@
-[
-  {
-    "uni": "Stanford University",
-    "rg": "Computational Seismology / Earthquake Physics",
-    "dl": "2025-01-15",
-    "link": "https://example.com/stanford-postdoc"
-  },
-  {
-    "uni": "Caltech",
-    "rg": "Seismic Imaging & Inversion",
-    "dl": "2025-02-01",
-    "link": "https://example.com/caltech-postdoc"
-  },
-  {
-    "uni": "UC Berkeley",
-    "rg": "Distributed Acoustic Sensing (DAS)",
-    "dl": "12/25/2025",
-    "link": "https://example.com/berkeley-postdoc"
-  }
-]
+{
+  "last_updated": "2025-12-08",
+  "entries": [
+    {
+      "uni": "University of Arizona",
+      "rg": "Computational Seismology",
+      "dl": "01/10/2026",
+      "details": {
+        "summary": "Postdoctoral research in seismic imaging and urban hazards.",
+        "pi": "Prof. Jane Doe",
+        "keywords": ["Seismology", "FWI", "HPC"],
+        "notes": "Strong Python background preferred."
+      }
+    }
+  ]
+}
