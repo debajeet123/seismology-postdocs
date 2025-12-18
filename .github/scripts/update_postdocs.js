@@ -1,5 +1,8 @@
 const fs = require("fs");
 
+function todayISO() {
+  return new Date().toISOString().split("T")[0];
+}
 
 const FILE = "postdocs.json";
 const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
