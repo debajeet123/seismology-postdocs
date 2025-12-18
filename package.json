@@ -1,0 +1,10 @@
+{
+  "name": "seismology-postdocs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static page for browsing seismology and geophysics postdoctoral openings",
+  "scripts": {
+    "test": "node validate.js",
+    "generate": "node generate-json.js"
+  }
+}
