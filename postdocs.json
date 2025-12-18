@@ -1,6 +1,21 @@
 [
   {
     "uni": "Stanford University",
+    "rg": "Computational Seismology / Earthquake Physics",
+    "dl": "2025-01-15",
+    "link": "https://example.com/stanford-postdoc"
+  },
+  {
+    "uni": "Caltech",
+    "rg": "Seismic Imaging & Inversion",
+    "dl": "2025-02-01",
+    "link": "https://example.com/caltech-postdoc"
+  },
+  {
+    "uni": "UC Berkeley",
+    "rg": "Distributed Acoustic Sensing (DAS)",
+    "dl": "open",
+    "link": "https://example.com/berkeley-postdoc"
     "rg": "Crustal Seismology & Earthquake Physics",
     "dl": "02/15/2025",
     "link": "https://earth.stanford.edu"

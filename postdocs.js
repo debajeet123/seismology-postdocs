@@ -1,3 +1,7 @@
+const FALLBACK_POSTDOCS = typeof window !== "undefined" && Array.isArray(window.FALLBACK_POSTDOCS)
+  ? window.FALLBACK_POSTDOCS
+  : [];
+
 let postdocs = [];
 let currentSortCol = null;
 let sortAsc = true;
@@ -25,6 +29,22 @@ function renderError(message) {
 /* ---------- LOAD DATA ---------- */
 async function loadPostdocs() {
   try {
+    const res = await fetch("postdocs.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("Empty dataset");
+    }
+
+    postdocs = data;
+  } catch (err) {
+    console.warn("Using built-in dataset because postdocs.json could not be loaded.", err);
+    postdocs = [...FALLBACK_POSTDOCS];
+  }
+
+  postdocs.sort((a, b) => deadlineValue(a.dl) - deadlineValue(b.dl));
+  renderTable(postdocs);
     const res = await fetch("postdocs.json");
     if (!res.ok) {
       throw new Error(`Failed to load opportunities (status ${res.status})`);
@@ -45,6 +65,22 @@ function renderTable(data) {
 
   data.forEach(p => {
     const row = document.createElement("tr");
+
+    const countdown = getCountdown(p.dl);
+
+    row.innerHTML = `
+        <td>${p.uni}</td>
+        <td>${p.rg}</td>
+        <td class="${countdown.class}">
+          ${p.dl}
+          ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+        </td>
+        <td>
+          ${p.link
+            ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
+            : "—"}
+        </td>
+      `;
     const countdown = getCountdown(p.dl);
 
     row.innerHTML = `
@@ -88,6 +124,10 @@ function sortTable(colIndex) {
 
   postdocs.sort((a, b) => {
     if (colIndex === 2) {
+      // Deadline column → date-aware sort
+      return sortAsc
+        ? deadlineValue(a.dl) - deadlineValue(b.dl)
+        : deadlineValue(b.dl) - deadlineValue(a.dl);
       const da = deadlineValue(a.dl);
       const db = deadlineValue(b.dl);
       return sortAsc ? da - db : db - da;
@@ -101,6 +141,16 @@ function sortTable(colIndex) {
   renderTable(postdocs);
 }
 
+function deadlineValue(dl) {
+  if (!dl || dl.toLowerCase() === "open") return Infinity;
+  const time = new Date(dl).getTime();
+  return Number.isNaN(time) ? Infinity : time;
+}
+
+/* ---------- DEADLINE COLOR LOGIC ---------- */
+function getCountdown(dl) {
+  if (!dl || dl.toLowerCase() === "open") {
+
 /* ---------- DEADLINE COLOR LOGIC ---------- */
 function getCountdown(dl) {
   if (!dl || dl.toLowerCase() === "open") {
@@ -113,6 +163,7 @@ function getCountdown(dl) {
   }
 
   const today = new Date();
+  const deadline = new Date(dl);
   const diffMs = deadline - today;
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
