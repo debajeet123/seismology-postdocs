@@ -26,9 +26,17 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-
+      
+          # Stash any changes made by the script
+          git stash --include-untracked
+      
+          # Pull latest main safely
           git pull --rebase origin main
-
+      
+          # Re-apply changes
+          git stash pop || true
+      
           git add postdocs.json
           git commit -m "Auto-update postdocs.json" || true
           git push origin HEAD:main
+      
