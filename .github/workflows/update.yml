@@ -23,11 +23,15 @@ jobs:
         run: node .github/scripts/update_postdocs.js
 
       - name: Commit changes
-  run: |
-    git config user.name "github-actions"
-    git config user.email "actions@github.com"
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
 
-    git pull --rebase origin main
+          git pull --rebase origin main
+
+          git add postdocs.json
+          git commit -m "Auto-update postdocs.json" || true
+          git push origin HEAD:main
 
     git add postdocs.json
     git commit -m "Auto-update postdocs.json" || true
