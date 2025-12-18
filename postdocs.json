@@ -16,20 +16,5 @@
     "rg": "Distributed Acoustic Sensing (DAS)",
     "dl": "open",
     "link": "https://example.com/berkeley-postdoc"
-    "rg": "Crustal Seismology & Earthquake Physics",
-    "dl": "02/15/2025",
-    "link": "https://earth.stanford.edu"
-  },
-  {
-    "uni": "University of California, Berkeley",
-    "rg": "Distributed Acoustic Sensing & Ambient Noise",
-    "dl": "03/01/2025",
-    "link": "https://seismo.berkeley.edu"
-  },
-  {
-    "uni": "Massachusetts Institute of Technology",
-    "rg": "Computational Seismic Imaging",
-    "dl": "Open",
-    "link": "https://eaps.mit.edu"
   }
 ]
