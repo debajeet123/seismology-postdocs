@@ -9,6 +9,23 @@ let sortAsc = true;
 const tbody = document.querySelector("#postdocTable tbody");
 const searchInput = document.getElementById("searchInput");
 
+/* ---------- HELPERS ---------- */
+function deadlineValue(dl) {
+  if (!dl || dl.toLowerCase() === "open") {
+    return Infinity;
+  }
+  const parsed = new Date(dl);
+  return isNaN(parsed) ? Infinity : parsed;
+}
+
+function renderError(message) {
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="4" class="status-message">${message}</td>
+    </tr>
+  `;
+}
+
 /* ---------- LOAD DATA ---------- */
 async function loadPostdocs() {
   try {
@@ -28,6 +45,18 @@ async function loadPostdocs() {
 
   postdocs.sort((a, b) => deadlineValue(a.dl) - deadlineValue(b.dl));
   renderTable(postdocs);
+    const res = await fetch("postdocs.json");
+    if (!res.ok) {
+      throw new Error(`Failed to load opportunities (status ${res.status})`);
+    }
+
+    postdocs = await res.json();
+    postdocs.sort((a, b) => deadlineValue(a.dl) - deadlineValue(b.dl));
+    renderTable(postdocs);
+  } catch (err) {
+    renderError("Unable to load opportunities right now. Please try again later.");
+    console.error(err);
+  }
 }
 
 /* ---------- RENDER TABLE ---------- */
@@ -52,6 +81,21 @@ function renderTable(data) {
             : "—"}
         </td>
       `;
+    const countdown = getCountdown(p.dl);
+
+    row.innerHTML = `
+      <td>${p.uni}</td>
+      <td>${p.rg}</td>
+      <td class="${countdown.class}">
+        ${p.dl}
+        ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+      </td>
+      <td>
+        ${p.link
+          ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
+          : "—"}
+      </td>
+    `;
 
     tbody.appendChild(row);
   });
@@ -84,6 +128,9 @@ function sortTable(colIndex) {
       return sortAsc
         ? deadlineValue(a.dl) - deadlineValue(b.dl)
         : deadlineValue(b.dl) - deadlineValue(a.dl);
+      const da = deadlineValue(a.dl);
+      const db = deadlineValue(b.dl);
+      return sortAsc ? da - db : db - da;
     }
 
     const A = a[keys[colIndex]].toLowerCase();
@@ -103,6 +150,15 @@ function deadlineValue(dl) {
 /* ---------- DEADLINE COLOR LOGIC ---------- */
 function getCountdown(dl) {
   if (!dl || dl.toLowerCase() === "open") {
+
+/* ---------- DEADLINE COLOR LOGIC ---------- */
+function getCountdown(dl) {
+  if (!dl || dl.toLowerCase() === "open") {
+    return { text: "", class: "" };
+  }
+
+  const deadline = new Date(dl);
+  if (isNaN(deadline)) {
     return { text: "", class: "" };
   }
 
