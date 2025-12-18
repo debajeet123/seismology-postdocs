@@ -32,8 +32,3 @@ jobs:
           git add postdocs.json
           git commit -m "Auto-update postdocs.json" || true
           git push origin HEAD:main
-
-    git add postdocs.json
-    git commit -m "Auto-update postdocs.json" || true
-    git push origin HEAD:main
-
