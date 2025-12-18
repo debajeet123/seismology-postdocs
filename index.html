@@ -2,38 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Seismology Postdoc Opportunities (USA)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <title>Seismology Postdoc Opportunities</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <header>
-    <h1>🇺🇸 Seismology & Geophysics Postdoc Opportunities</h1>
-    <p>Computational seismology, seismic imaging, inversion, DAS, and earthquake physics</p>
-    <input type="text" id="searchInput" placeholder="Search by university or research area..." />
-  </header>
+<header>
+  <h1>🇺🇸 Seismology & Geophysics Postdocs</h1>
+  <p>Computational seismology, DAS, inversion, HPC</p>
+  <input id="searchInput" placeholder="Search…" />
+</header>
 
-  <main>
-    <table id="postdocTable">
-        <thead>
-            <tr>
-              <th onclick="sortTable(0)">University</th>
-              <th onclick="sortTable(1)">Research Group / Area</th>
-              <th onclick="sortTable(2)">Deadline</th>
-              <th>Link</th>
-            </tr>
-          </thead>
-          
-      <tbody></tbody>
-    </table>
-  </main>
+<main>
+  <table id="postdocTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">University</th>
+        <th onclick="sortTable(1)">Area</th>
+        <th onclick="sortTable(2)">Deadline</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
 
-  <footer>
-    <p>Maintained by Debajeet Barman • Updated Dec 2025</p>
-  </footer>
+<footer>
+  <p id="lastUpdated"></p>
+</footer>
 
-  <script src="dataset.js"></script>
-  <script src="postdocs.js"></script>
+<script src="postdocs.js"></script>
 </body>
 </html>
