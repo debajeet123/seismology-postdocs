@@ -17,21 +17,9 @@ To regenerate the sample `postdocs.json` from the canonical dataset in `dataset.
 node generate-json.js
 ```
 
-You can also use the npm scripts:
-
-```bash
-npm run generate
-```
-
 ## Validating the dataset
 Run the lightweight validator to ensure `postdocs.json` has the expected shape and deadline formats:
 
 ```bash
 node validate.js
-```
-
-Or via npm:
-
-```bash
-npm test
 ```

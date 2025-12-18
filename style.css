@@ -11,7 +11,7 @@
     --warning: #f59e0b;
     --success: #22c55e;
   }
-  
+
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0;
@@ -19,24 +19,24 @@
     color: var(--text-main);
     line-height: 1.6;
   }
-  
+
   /* ---------- HEADER ---------- */
   header {
     text-align: center;
     padding: 2rem 1rem;
     background: var(--bg-header);
   }
-  
+
   header h1 {
     margin: 0 0 0.5rem 0;
     font-size: clamp(1.6rem, 3vw, 2.2rem);
   }
-  
+
   header p {
     margin: 0;
     color: var(--text-dim);
   }
-  
+
   header input {
     margin-top: 1.2rem;
     padding: 0.7rem 0.9rem;
@@ -47,7 +47,7 @@
     font-size: 1rem;
     outline: none;
   }
-  
+
   /* ---------- TABLE ---------- */
   table {
     width: 92%;
@@ -57,12 +57,12 @@
     border-radius: 14px;
     overflow: hidden;
   }
-  
+
   th, td {
     padding: 1rem;
     text-align: left;
   }
-  
+
   th {
     background: #1f2937;
     cursor: pointer;
@@ -71,40 +71,40 @@
     z-index: 2;
     font-weight: 600;
   }
-  
+
   tr:nth-child(even) {
     background: var(--bg-alt);
   }
-  
+
   tr:hover {
     background: var(--bg-hover);
   }
-  
+
   /* ---------- DEADLINE STATES (optional) ---------- */
   .deadline-soon {
     color: var(--danger);
     font-weight: 600;
   }
-  
+
   .deadline-mid {
     color: var(--warning);
   }
-  
+
   .deadline-ok {
     color: var(--success);
   }
-  
+
   /* ---------- LINKS ---------- */
   a {
     color: var(--link);
     text-decoration: none;
     font-weight: 500;
   }
-  
+
   a:hover {
     text-decoration: underline;
   }
-  
+
   /* ---------- FOOTER ---------- */
   footer {
     text-align: center;
@@ -112,24 +112,52 @@
     opacity: 0.7;
     font-size: 0.9rem;
   }
-  
+
   /* ---------- MOBILE ---------- */
   @media (max-width: 768px) {
     table {
       width: 98%;
       font-size: 0.9rem;
     }
-  
+
     th, td {
       padding: 0.7rem;
     }
   }
-  
-  
+
+
   .countdown {
     margin-left: 8px;
     font-size: 0.85rem;
     opacity: 0.9;
     white-space: nowrap;
+  }
+
+  .status-message {
+    text-align: center;
+    color: var(--text-dim);
+  }
+
+
+  .details-btn {
+    background: none;
+    border: 1px solid #334155;
+    color: #93c5fd;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  
+  .details-btn:hover {
+    background: rgba(148, 163, 184, 0.15);
+  }
+  
+  .details-box {
+    padding: 0.8rem 1rem;
+    background: #020617;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
   

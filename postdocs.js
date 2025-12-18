@@ -9,6 +9,21 @@ let sortAsc = true;
 const tbody = document.querySelector("#postdocTable tbody");
 const searchInput = document.getElementById("searchInput");
 
+/* ---------- HELPERS ---------- */
+function deadlineValue(dl) {
+  if (!dl || dl.toLowerCase() === "open") return Infinity;
+  const time = Date.parse(dl);
+  return Number.isNaN(time) ? Infinity : time;
+}
+
+function renderError(message) {
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="4" class="status-message">${message}</td>
+    </tr>
+  `;
+}
+
 /* ---------- LOAD DATA ---------- */
 async function loadPostdocs() {
   try {
@@ -19,11 +34,75 @@ async function loadPostdocs() {
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error("Empty dataset");
     }
-
+    function renderTable(data) {
+        tbody.innerHTML = "";
+      
+        data.forEach((p, idx) => {
+          const countdown = getCountdown(p.dl);
+          const detailsId = `details-${idx}`;
+      
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${p.uni}</td>
+            <td>${p.rg}</td>
+            <td class="${countdown.class}">
+              ${p.dl}
+              ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+            </td>
+            <td>
+              ${p.details ? `<button class="details-btn" data-target="${detailsId}">Details</button>` : "—"}
+            </td>
+          `;
+      
+          tbody.appendChild(row);
+      
+          if (p.details) {
+            const detailsRow = document.createElement("tr");
+            detailsRow.id = detailsId;
+            detailsRow.className = "details-row";
+            detailsRow.style.display = "none";
+      
+            detailsRow.innerHTML = `
+              <td colspan="4">
+                <div class="details-box">
+                  ${p.details.summary ? `<p><strong>Summary:</strong> ${p.details.summary}</p>` : ""}
+                  ${p.details.pi ? `<p><strong>PI:</strong> ${p.details.pi}</p>` : ""}
+                  ${Array.isArray(p.details.keywords)
+                    ? `<p><strong>Keywords:</strong> ${p.details.keywords.join(", ")}</p>`
+                    : ""}
+                  ${p.details.notes ? `<p><strong>Notes:</strong> ${p.details.notes}</p>` : ""}
+                </div>
+              </td>
+            `;
+      
+            tbody.appendChild(detailsRow);
+          }
+        });
+      
+        attachDetailHandlers();
+      }
+      
     postdocs = data;
-  } catch (err) {
+
+  } 
+  function attachDetailHandlers() {
+    document.querySelectorAll(".details-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = document.getElementById(btn.dataset.target);
+        const isOpen = target.style.display === "table-row";
+  
+        target.style.display = isOpen ? "none" : "table-row";
+        btn.textContent = isOpen ? "Details" : "Hide";
+      });
+    });
+  }
+  catch (err) {
     console.warn("Using built-in dataset because postdocs.json could not be loaded.", err);
     postdocs = [...FALLBACK_POSTDOCS];
+    if (postdocs.length === 0) {
+      renderError("Unable to load opportunities right now. Please try again later.");
+      return;
+    }
   }
 
   postdocs.sort((a, b) => deadlineValue(a.dl) - deadlineValue(b.dl));
@@ -31,41 +110,33 @@ async function loadPostdocs() {
 }
 
 /* ---------- RENDER TABLE ---------- */
-function renderTable(data) {
-  tbody.innerHTML = "";
+row.innerHTML = `
+  <td>${esc(p.uni)}</td>
+  <td>${esc(p.rg)}</td>
+  <td class="${countdown.class}">
+    ${esc(p.dl)}
+    ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
+  </td>
+  <td>
+    ${p.link
+      ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
+      : "—"}
+  </td>
+`;
 
-  data.forEach(p => {
-    const row = document.createElement("tr");
-
-    const countdown = getCountdown(p.dl);
-
-    row.innerHTML = `
-        <td>${p.uni}</td>
-        <td>${p.rg}</td>
-        <td class="${countdown.class}">
-          ${p.dl}
-          ${countdown.text ? `<span class="countdown">${countdown.text}</span>` : ""}
-        </td>
-        <td>
-          ${p.link
-            ? `<a href="${p.link}" target="_blank" rel="noopener">Apply ↗</a>`
-            : "—"}
-        </td>
-      `;
-
-    tbody.appendChild(row);
-  });
-}
 
 /* ---------- SEARCH ---------- */
-searchInput.addEventListener("input", () => {
-  const q = searchInput.value.toLowerCase();
-  const filtered = postdocs.filter(p =>
-    p.uni.toLowerCase().includes(q) ||
-    p.rg.toLowerCase().includes(q)
-  );
-  renderTable(filtered);
-});
+if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase();
+      const filtered = postdocs.filter(p =>
+        p.uni.toLowerCase().includes(q) ||
+        p.rg.toLowerCase().includes(q)
+      );
+      renderTable(filtered);
+    });
+  }
+  
 
 /* ---------- SORT ---------- */
 function sortTable(colIndex) {
@@ -80,7 +151,6 @@ function sortTable(colIndex) {
 
   postdocs.sort((a, b) => {
     if (colIndex === 2) {
-      // Deadline column → date-aware sort
       return sortAsc
         ? deadlineValue(a.dl) - deadlineValue(b.dl)
         : deadlineValue(b.dl) - deadlineValue(a.dl);
@@ -94,20 +164,19 @@ function sortTable(colIndex) {
   renderTable(postdocs);
 }
 
-function deadlineValue(dl) {
-  if (!dl || dl.toLowerCase() === "open") return Infinity;
-  const time = new Date(dl).getTime();
-  return Number.isNaN(time) ? Infinity : time;
-}
-
 /* ---------- DEADLINE COLOR LOGIC ---------- */
 function getCountdown(dl) {
   if (!dl || dl.toLowerCase() === "open") {
     return { text: "", class: "" };
   }
 
+  const deadline = new Date(dl + "T00:00:00");
+
+  if (Number.isNaN(deadline.getTime())) {
+    return { text: "", class: "" };
+  }
+
   const today = new Date();
-  const deadline = new Date(dl);
   const diffMs = deadline - today;
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
@@ -128,3 +197,12 @@ function getCountdown(dl) {
 
 /* ---------- INIT ---------- */
 loadPostdocs();
+
+
+function esc(str = "") {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+  
