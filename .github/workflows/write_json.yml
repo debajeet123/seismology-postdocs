@@ -4,7 +4,71 @@ on:
   workflow_dispatch:
     inputs:
       prompt:
+        description: "Prompt for content generationname: Generate content with Copilot (GitHub Models)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
         description: "Prompt for content generation"
+        required: true
+        default: "Generate a short JSON summary about seismic research"
+
+permissions:
+  contents: write
+  models: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Call GitHub Models (Copilot backend)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROMPT: ${{ github.event.inputs.prompt }}
+        run: |
+          RESPONSE=$(curl -s https://api.github.com/models/generate \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"model\": \"gpt-4.1\",
+              \"input\": \"$PROMPT\"
+            }")
+
+          echo "$RESPONSE" > raw_output.json
+          echo "Model response saved"
+
+      - name: Extract text and write JSON
+        run: |
+          python << 'EOF'
+          import json
+
+          with open("raw_output.json") as f:
+              data = json.load(f)
+
+          text = data["output"][0]["content"][0]["text"]
+
+          result = {
+              "generated_by": "copilot",
+              "content": text
+          }
+
+          with open("generated.json", "w") as f:
+              json.dump(result, f, indent=2)
+          EOF
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add generated.json
+          git diff --cached --quiet || git commit -m "Copilot-generated content"
+          git push
+"
         required: true
         default: "Generate a short JSON summary about seismic research"
 
