@@ -1,0 +1,49 @@
+name: Write dictionary to JSON
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"   # optional weekly run
+
+permissions:
+  contents: write
+
+jobs:
+  write-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Write dictionary to JSON
+        run: |
+          python << 'EOF'
+          import json
+          from datetime import datetime
+
+          data = {
+              "name": "Debajeet Barman",
+              "role": "Geophysicist",
+              "updated": datetime.utcnow().isoformat() + "Z",
+              "skills": ["Python", "MPI", "CUDA", "Seismology"]
+          }
+
+          with open("data.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, indent=2)
+
+          print("data.json written")
+          EOF
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data.json
+          git diff --cached --quiet || git commit -m "Auto-update data.json"
+          git push
