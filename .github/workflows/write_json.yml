@@ -1,49 +1,64 @@
-name: Write dictionary to JSON
+name: Generate content with Copilot (GitHub Models)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * 1"   # optional weekly run
+    inputs:
+      prompt:
+        description: "Prompt for content generation"
+        required: true
+        default: "Generate a short JSON summary about seismic research"
 
 permissions:
   contents: write
+  models: read
 
 jobs:
-  write-json:
+  generate:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - name: Call GitHub Models (Copilot backend)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROMPT: ${{ github.event.inputs.prompt }}
+        run: |
+          RESPONSE=$(curl -s https://api.github.com/models/generate \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"model\": \"gpt-4.1\",
+              \"input\": \"$PROMPT\"
+            }")
 
-      - name: Write dictionary to JSON
+          echo "$RESPONSE" > raw_output.json
+          echo "Model response saved"
+
+      - name: Extract text and write JSON
         run: |
           python << 'EOF'
           import json
-          from datetime import datetime
 
-          data = {
-              "name": "Debajeet Barman",
-              "role": "Geophysicist",
-              "updated": datetime.utcnow().isoformat() + "Z",
-              "skills": ["Python", "MPI", "CUDA", "Seismology"]
+          with open("raw_output.json") as f:
+              data = json.load(f)
+
+          text = data["output"][0]["content"][0]["text"]
+
+          result = {
+              "generated_by": "copilot",
+              "content": text
           }
 
-          with open("data.json", "w", encoding="utf-8") as f:
-              json.dump(data, f, indent=2)
-
-          print("data.json written")
+          with open("generated.json", "w") as f:
+              json.dump(result, f, indent=2)
           EOF
 
-      - name: Commit and push if changed
+      - name: Commit results
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add data.json
-          git diff --cached --quiet || git commit -m "Auto-update data.json"
+          git add generated.json
+          git diff --cached --quiet || git commit -m "Copilot-generated content"
           git push
