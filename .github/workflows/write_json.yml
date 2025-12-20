@@ -1,12 +1,12 @@
-name: Generate content with Copilot (GitHub Models)
+name: Generate JSON with Copilot (GitHub Models)
 
 on:
   workflow_dispatch:
     inputs:
       prompt:
-        description: "Prompt for content generation"
+        description: "Prompt for Copilot"
         required: true
-        default: "Generate a short JSON summary about seismic research"
+        default: "Generate a short JSON-ready summary of seismic research progress"
 
 permissions:
   contents: write
@@ -17,48 +17,70 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Call GitHub Models (Copilot backend)
+      # 2️⃣ Call GitHub Models (Copilot backend)
+      - name: Generate content using Copilot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROMPT: ${{ github.event.inputs.prompt }}
         run: |
-          RESPONSE=$(curl -s https://api.github.com/models/generate \
+          echo "Calling GitHub Models..."
+
+          curl -s https://api.github.com/models/chat/completions \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -H "Content-Type: application/json" \
             -d "{
               \"model\": \"gpt-4.1\",
-              \"input\": \"$PROMPT\"
-            }")
+              \"messages\": [
+                {
+                  \"role\": \"user\",
+                  \"content\": \"$PROMPT\"
+                }
+              ]
+            }" > raw_output.json
 
-          echo "$RESPONSE" > raw_output.json
-          echo "Model response saved"
+          echo "Raw model output saved"
 
-      - name: Extract text and write JSON
+      # 3️⃣ Parse response + write final JSON
+      - name: Parse model output and write JSON
         run: |
           python << 'EOF'
           import json
+          from datetime import datetime
 
-          with open("raw_output.json") as f:
+          with open("raw_output.json", encoding="utf-8") as f:
               data = json.load(f)
 
-          text = data["output"][0]["content"][0]["text"]
+          # Defensive parsing
+          choices = data.get("choices", [])
+          if not choices:
+              raise RuntimeError("No choices returned from GitHub Models")
+
+          content = choices[0]["message"]["content"]
 
           result = {
-              "generated_by": "copilot",
-              "content": text
+              "generated_by": "github-copilot-models",
+              "model": data.get("model"),
+              "timestamp": datetime.utcnow().isoformat() + "Z",
+              "prompt": "${{ github.event.inputs.prompt }}",
+              "content": content
           }
 
-          with open("generated.json", "w") as f:
+          with open("generated.json", "w", encoding="utf-8") as f:
               json.dump(result, f, indent=2)
+
+          print("generated.json written successfully")
           EOF
 
-      - name: Commit results
+      # 4️⃣ Commit only if changed
+      - name: Commit and push changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add generated.json
-          git diff --cached --quiet || git commit -m "Copilot-generated content"
+          git diff --cached --quiet || git commit -m "Copilot-generated JSON update"
           git push
