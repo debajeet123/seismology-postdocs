@@ -1,5 +1,5 @@
 {
-  "last_updated": "2025-12-08",
+  "last_updated": "2025-12-22",
   "entries": [
     {
       "uni": "University of Arizona",
@@ -8,7 +8,11 @@
       "details": {
         "summary": "Postdoctoral research in seismic imaging and urban hazards.",
         "pi": "Prof. Jane Doe",
-        "keywords": ["Seismology", "FWI", "HPC"],
+        "keywords": [
+          "Seismology",
+          "FWI",
+          "HPC"
+        ],
         "notes": "Strong Python background preferred."
       }
     }
